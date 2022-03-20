@@ -4,7 +4,7 @@ import requests
 import json
 import random
 from replit import db
-#from keep_alive import keep_alive
+from stay_alive import stay_alive
 
 client = discord.Client()
 
@@ -90,5 +90,5 @@ async def on_message(message):
 
   
 
-  
+stay_alive() 
 client.run(os.environ['token'])
