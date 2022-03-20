@@ -8,7 +8,7 @@ from replit import db
 
 client = discord.Client()
 
-words = ["sad", "depressed", "unhappy", "angry", "miserable", "depressing","melancholy","gloomy","down"]
+words = ["sad", "depressed", "unhappy", "angry", "miserable", "depressing","melancholy","gloomy","down","bad"]
 
 dummy_quotes = [
   "You have got this",
@@ -21,12 +21,29 @@ dummy_quotes = [
 
 
 
+
 def fetch_quote():
   response = requests.get("https://zenquotes.io/api/random")
   json_data = json.loads(response.text)
   quote = json_data[0]['q'] + " -- " + json_data[0]['a']
   return(quote)
 
+
+def update_quotes(quote_message):
+  if "qoutes" in db.keys():
+    quotes = db["quotes"]
+    quotes.append(quote_message)
+    db["quotes"] = quotes
+  else:
+    db["quotes"] = [quote_message]
+
+def delete_quotes(index):
+  quotes = db["quotes"]
+  if len(quotes) > index:
+    del quotes[index]
+    db["quotes"] = quotes
+  
+  
 
 @client.event
 async def on_ready():
@@ -46,8 +63,28 @@ async def on_message(message):
     quote = fetch_quote()
     await message.channel.send(quote)
 
+  choices = dummy_quotes
+  if "quotes" in db.keys():
+     choices = choices + list(db["quotes"])
+
   if any(word in msg for word in words):
-    await message.channel.send(random.choice(dummy_quotes))
+    await message.channel.send(random.choice(choices))
+
+  if msg.startswith("$new"):
+    quote_message = msg.split("$new ",1)[1]
+    update_quotes(quote_message)
+    await message.channel.send("New positive quote added.")
+
+  if msg.startswith("$del"):
+    quotes = []
+    if "quotes" in db.keys():
+      index = int(msg.split("$del ",1)[1])
+      delete_quotes(index)
+      quotes = db["quotes"]
+    await message.channel.send(quotes)
+    
+
+  
 
 
 
